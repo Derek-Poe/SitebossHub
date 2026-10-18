@@ -6,7 +6,11 @@ SitebossHub's original PowerShell system collected infrastructure sensor reading
 
 The dashboard brings reachability, temperature, humidity, power, propane, door state, and tower-light state into one summary. An operator can move from that summary to a site's sensor readings, short trends, recorded changes, or generator-run information. Collection and presentation are separate: the browser does not need to open SNMP sessions or understand each device's OID map.
 
-This demonstrates consolidation and drill-down as implemented capabilities. The repository does not establish how many sites were deployed, hours saved, incident counts, or uptime improvements; no such figures are inferred from demo data or source constants.
+### Deployment context
+
+Derek Poe built the first version to support Hurricane Laura recovery. A help desk/admin team used SitebossHub daily to monitor **34 fixed cell tower sites and two mobile tower sites**, sometimes during periods of **24/7 team coverage**.
+
+These deployment details were supplied by the author. They explain who used the system and the operational setting; they are not inferred from demo data or source constants. No measured hours-saved, incident-reduction, or availability figures are claimed. The implemented contribution is a shared summary and drill-down workflow across those sites, backed by automated sensor collection.
 
 ## A collection cycle
 
@@ -63,4 +67,4 @@ The simulator's lock, bounded catch-up, and request validation are maintenance w
 
 The original collector also contains environment-specific database access and legacy HTTP/TLS compatibility work. Those operational settings are excluded from this package. Its source was inspected; it was not executed against devices during packaging. The public demo binds to loopback by default and uses synthetic addresses and in-memory data.
 
-The inspected collector snapshot has SHA-256 `610e5776c12966d92f48431ff03a050f385a7b395b2753f8e8f1f926b02a6f37`. This identifies the source used for the implementation account above without publishing its deployment configuration. A working synthetic demo and passing tests establish the published package's behavior; they do not establish deployment scale or operational impact.
+The inspected collector snapshot has SHA-256 `610e5776c12966d92f48431ff03a050f385a7b395b2753f8e8f1f926b02a6f37`. This identifies the source used for the implementation account above without publishing its deployment configuration. The author's account supplies the deployment context; source inspection supplies the mechanism descriptions; the synthetic demo and tests establish the published package's behavior.

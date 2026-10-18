@@ -6,6 +6,8 @@ SitebossHub brings temperature, humidity, power, propane, door, reachability and
 
 The original system was written by Derek Poe in PowerShell and browser JavaScript. This repository keeps the original dashboard design and API contracts, with a Python/FastAPI simulator that makes the work easy to run and inspect. The simulator is a portfolio reconstruction, not the original production backend.
 
+I built the first version to support Hurricane Laura recovery. A help desk/admin team used SitebossHub daily to monitor **34 fixed cell tower sites and two mobile tower sites**, including periods of 24/7 team coverage. This is my account of the original deployment; the synthetic demo below is a separate, reproducible example.
+
 ![Synthetic sensor dashboard with Canvas sparklines and alarm view](docs/dashboard.png)
 
 ## Run locally
