@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body{
+        background-color: #000000;
+        color: #ffffff;
+      }
+
+      canvas{
+        background-color: #333333;      	
+      }
+
+      #in_dataValue{
+      	width: 75px;
+      } 
+    </style>
+  </head>
+  <body>
+<nav aria-label="Demo navigation" style="padding:12px;background:#182634;color:white;position:relative;z-index:2">
+  <strong>SitebossHub · synthetic telemetry</strong> &nbsp;
+  <a style="color:#9edfff" href="/SitebossHub">Dashboard</a> ·
+  <a style="color:#9edfff" href="/EP_SitebossHub">Compact view</a> ·
+  <a style="color:#9edfff" href="/SitebossHistory">History</a> ·
+  <a style="color:#9edfff" href="/demo/report" download>Export snapshot CSV</a>
+  <div style="font-size:0.85rem;margin-top:6px">All sites, addresses and readings are simulated. Device links open local sensor details.</div>
+</nav>
+    <title>Siteboss History</title>
+    <h1>Siteboss History</h1>
+    <p id="hist_status" role="status"></p>
+    <div id="div_canvasCon">
+      <canvas id="can_histGraph"></canvas>
+	</div>
+	<div id="div_dataEntry">
+	  <label for="sel_site">Site </label><select id="sel_site"></select><select id="sel_type" onchange="getTypeSubmit()">
+        <option>Temperature</option>
+        <option>Humidity</option>
+        <option>Door</option>
+        <option>Battery</option>
+        <option>Propane</option>
+        <option>Generator</option>
+        <option>Ping</option>
+      </select><input id="in_date" type="date"><input id="in_time" type="time"><button id="btn_submit" onclick="getHistData()">Submit</button>
+	</div>
+    <script>
+      let histData = [];
+      let histDataType = "";
+      let typeSubmit = "temp";
+      let histLength = 25;
+
+      //document.querySelector("#in_dataValue").onkeyup = function(e){if(e.keyCode == 13){addValue()}};
+      
+      document.querySelector("#sel_type").value = "Temperature";
+      const now = new Date();
+      document.querySelector("#in_date").value = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+      document.querySelector("#in_time").value = "23:59";
+      fetch("/demo/all").then(r => r.json()).then(sites => {
+        const select = document.querySelector("#sel_site");
+        sites.forEach(site => select.add(new Option(site.CellSite, site.CellSite)));
+        getHistData();
+      });
+
+      function buildGraph(){
+        let title;
+        let unit;
+        let boolGraph = false;
+
+        //
+        //
+          validGraph = true;
+        //
+        //
+
+        //console.log(histDataType);
+
+        switch(histDataType){
+          case "Temp":
+            title = "Temperature";
+            unit = "F";
+            break;
+          
+          case "Humid":
+            title = "Humidity";
+            unit = "%";
+            break;
+
+          case "Propane":
+            title = "Propane";
+            unit = "Gal";
+            break;
+          
+          case "Door":
+            title = "Door";
+            boolGraph = true;
+            break;
+          
+          case "Battery":
+            title = "Battery";
+            boolGraph = true;
+            break;
+          
+          case "Generator":
+            title = "Generator";
+            boolGraph = true;
+            break;
+          
+          case "Ping":
+            title = "Ping";
+            boolGraph = true;
+            break;
+          
+          default:
+            title = histDataType;
+            unit = "";
+        }
+
+        //console.log(boolGraph);
+
+        if(!(boolGraph) && validGraph){
+	      let rData = histData;
+	      //console.log(rData);
+	      let data = [];
+	      let tData = [];
+	      for(let i = 0; i < rData.length; i++){
+	      	let d = parseFloat(rData[i][histDataType]);
+	        if(!(isNaN(d))){
+	      	  data.push(d);
+	      	  tData.push(rData[i][histDataType]);
+	      	}
+	      }
+
+	      //console.log(data);
+	      //console.log(tData); 
+	    
+	      let graph = document.querySelector("#can_histGraph");
+          //graph.width = 400;
+          //graph.height = 300;
+          graph.width = 1800;
+          graph.height = 800;
+        
+          let ctx = graph.getContext("2d");
+          //ctx.fillStyle = "#00e000";
+          let dMax = Math.max(...data);
+          let dMin = Math.min(...data);
+          let dWidth = dMax - dMin;
+          let drawMarX =  graph.width * 0.05;
+          let drawMarY = graph.height * 0.10;
+          let spreadDistX = (graph.width - (drawMarX * 2)) / (data.length - 1);
+          let spreadDistY = (graph.height - (drawMarY * 2)) / (data.length - 1);
+          let pX = drawMarX;
+          let firstPoint = true;
+          ctx.strokeStyle = "#000000";
+          let sY = drawMarY;
+          let gYA = [];
+          for(let dVal of data){
+            ctx.beginPath();
+            ctx.moveTo(pX, drawMarY);
+            ctx.lineTo(pX, (graph.height - drawMarY));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(drawMarX, sY);
+            ctx.lineTo((graph.width - drawMarX), sY);
+            ctx.stroke();
+            gYA.push(sY);         
+            pX += spreadDistX;
+            sY += spreadDistY;
+          }
+          pX = drawMarX;
+          ctx.strokeStyle = "#00e000";
+          ctx.fillStyle = "#00e000";
+          let pYA = [];
+          for(let dVal of data){
+            let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            pYA.push(pY);
+            //console.log(pY + ":" + drawMarY);     
+            ctx.beginPath();
+            ctx.arc(pX,pY,3,0,(2*Math.PI));
+            ctx.fill();
+            //ctx.fillRect(pX, pY, 4, 4);
+            pX += spreadDistX;
+          }
+          pX = drawMarX;
+          ctx.beginPath();     
+          ctx.strokeStyle = "#00e000";
+          for(let pY of pYA){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            if(isNaN(pY)){
+              pY = graph.height / 2;
+            }
+            if(firstPoint){
+              ctx.moveTo(pX, pY);
+              firstPoint = false;
+            }
+            else{
+              ctx.lineTo(pX, pY);
+              ctx.stroke();
+            }
+            pX += spreadDistX;
+          }
+          ctx.putImageData((ctx.getImageData(0,0,graph.width,graph.height)),18,5);
+          let gLabs = [];
+          gLabs.push(dMin);
+          gLabs.push(dMax);
+          let gLabSpread = (dMax - dMin) / (data.length - 1);
+          for(let i = 0; i < (data.length - 2); i++){
+            gLabs.push(Math.round((dMin + (gLabSpread * (i + 1))) * 10) / 10);
+          }
+          //console.log(data);
+          //console.log(gLabs);
+          gLabs = gLabs.sort((b,a)=>{return a-b});
+          ctx.fillStyle = "#ffffff";
+          for(let i = 0; i < data.length; i++){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            let gY = gYA[i];
+            if(isNaN(gY)){
+              pY = graph.height / 2;
+            }
+            ctx.font = "10px Arial";
+            ctx.fillText(`${gLabs[i]} ${unit}`,drawMarX - 27, (gY + 5));
+          }
+          ctx.font = "15px Arial";
+          //ctx.fillText(`(${histGetData.split(",")[0]}) ${title}`,((graph.width / 2) - 35), ((drawMarY / 2) + 5));
+        }
+        else if(validGraph){
+          rData = histData;
+	      let data = [];
+	      let tData = [];
+	      for(let i = 0; i < rData.length; i++){
+	        if(rData[i][histDataType] !== ""){
+	          switch(rData[i][histDataType]){
+	            case "Door Closed":
+	            case "Battery Charging":
+	            case "Generator OFF":
+	            case "Reachable":
+	              data.push(0);
+	              break;
+	            default:
+	              data.push(1);
+	          }
+	          tData.push(Object.values(rData[0])[i]);
+	        }
+  	      }
+  	      let gLabs;
+  	      switch(histDataType){
+  	      	case "Door":
+  	      	  gLabs = ["Open","Closed"];
+  	      	  break;
+  	      	case "Battery":
+  	      	case "Generator":
+  	      	  gLabs = ["On","Off"];
+  	      	  break;
+  	      	case "Ping":
+  	      	  gLabs = ["No Ping","Ping"];
+  	      	  break;
+  	      }
+
+	      //console.log(data);  
+	    
+	      let graph = document.querySelector("#can_histGraph");
+          //graph.width = 400;
+          //graph.height = 300;
+          graph.width = 1800;
+          graph.height = 800;
+        
+          let ctx = graph.getContext("2d");
+          //ctx.fillStyle = "#00e000";
+          let dMax = Math.max(...data);
+          let dMin = Math.min(...data);
+          let dWidth = dMax - dMin;
+          let drawMarX =  graph.width * 0.10;
+          let drawMarY = graph.height * 0.10;
+          let spreadDistX = (graph.width - (drawMarX * 2)) / (data.length - 1);
+          let spreadDistY = (graph.height - (drawMarY * 2)) / (data.length - 1);
+          let pX = drawMarX;
+          let firstPoint = true;
+          ctx.strokeStyle = "#000000";
+          let sY = drawMarY;
+          let gYA = [];
+          for(let dVal of data){
+            ctx.beginPath();
+            ctx.moveTo(pX, drawMarY);
+            ctx.lineTo(pX, (graph.height - drawMarY));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.stroke();
+            gYA.push(sY);         
+            pX += spreadDistX;
+            sY += spreadDistY;
+          }
+          ctx.beginPath();
+          ctx.moveTo(drawMarX, drawMarY);
+          ctx.lineTo((graph.width - drawMarX), drawMarY);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(drawMarX, (graph.height - drawMarY));
+          ctx.lineTo((graph.width - drawMarX), (graph.height - drawMarY));
+          ctx.stroke();
+          pX = drawMarX;
+          ctx.strokeStyle = "#00e000";
+          ctx.fillStyle = "#00e000";
+          let pYA = [];
+          for(let dVal of data){
+            let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            pYA.push(pY);
+            //console.log(pY + ":" + drawMarY);     
+            ctx.beginPath();
+            ctx.arc(pX,pY,3,0,(2*Math.PI));
+            ctx.fill();
+            //ctx.fillRect(pX, pY, 4, 4);
+            pX += spreadDistX;
+          }
+          pX = drawMarX;
+          ctx.beginPath();     
+          ctx.strokeStyle = "#00e000";
+          for(let pY of pYA){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            if(isNaN(pY)){
+              pY = graph.height / 2;
+            }
+            if(firstPoint){
+              ctx.moveTo(pX, pY);
+              firstPoint = false;
+            }
+            else{
+              ctx.lineTo(pX, pY);
+              ctx.stroke();
+            }
+            pX += spreadDistX;
+          }
+          ctx.putImageData((ctx.getImageData(0,0,graph.width,graph.height)),18,5);;
+          ctx.fillStyle = "#ffffff";
+          
+          ctx.font = "10px Arial";
+          ctx.fillText(gLabs[0],drawMarX - 27, (drawMarY + 5));
+          ctx.fillText(gLabs[1],drawMarX - 27, ((graph.height - drawMarY) + 5));
+          
+          ctx.font = "15px Arial";
+          ctx.fillText(`(${histGetData.split(",")[0]}) ${title}`,((graph.width / 2) - 35), ((drawMarY / 2) + 5));
+        }
+
+        document.querySelector("#div_canvasCon").style.display = "block";
+        graphBuilt = true;
+        
+	  }
+
+	  function getTypeSubmit(){
+        switch(document.querySelector("#sel_type").value){
+          case "Temperature":
+          	typeSubmit = "temp";
+            break;
+          case "Humidity":
+          	typeSubmit = "humid";
+            break;
+          case "Door":
+          	typeSubmit = "door";
+            break;
+          case "Battery":
+          	typeSubmit = "battery";
+            break;
+          case "Propane":
+          	typeSubmit = "propane";
+            break;
+          case "Generator":
+          	typeSubmit = "generator";
+            break;
+          case "Ping":
+          	typeSubmit = "ping";
+            break;
+        }
+	  }
+      
+      function getHistData(){
+      	let histGetData = `${document.querySelector("#sel_site").value},${typeSubmit},${document.querySelector("#in_date").value},${document.querySelector("#in_time").value}:00,${histLength}`;
+        histGet = new XMLHttpRequest();
+        histGet.onreadystatechange = function(){
+          if(this.readyState == 4 && this.status == 200){
+            if(histGet.responseText !== ""){
+              histData = JSON.parse(histGet.responseText);
+                if(!(Array.isArray(histData))){
+                  histData = [histData];
+                }
+              if(histData.length === 0){
+                document.querySelector("#hist_status").innerText = "No changes recorded before that time.";
+                const canvas = document.querySelector("#can_histGraph");
+                canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+                return;
+              }
+              document.querySelector("#hist_status").innerText = `${histData.length} recorded changes`;
+              histDataType = Object.keys(histData[0])[1];
+              //hisAllData = stripNP(histData);
+              buildGraph();
+            }
+          }
+        };
+        histGet.open("GET", ("/demo/hist2/" + histGetData), true);
+        histGet.send();
+      }
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1716 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Siteboss Hub</title>
+    <style>
+      body{
+        background-color: #000000;
+        color: #ffffff;
+        overflow: hidden;
+      }
+
+      canvas{
+        background-color: #333333;    	
+      }
+
+      h1{
+      	/*text-align: center;*/
+      }
+      
+      table{
+        border-collapse: separate;
+        border-spacing: 0px;
+		display: inline-table;
+      }
+
+      table, th, td{
+        border: 0.5px solid white;
+        white-space: nowrap;
+      }
+
+      th, td{
+        padding: 5px;
+        background-color: black;
+      }
+
+      th{
+      	position: sticky;
+      	top: 0px;
+      	z-index: 2;
+        border-top-width: 1px;	
+      }
+
+      td{
+        display: table-cell;
+        vertical-align: center;
+        horizontal-align: center;
+        text-align: center;
+      }
+      /*
+      #table_testData > tbody > tr:hover > td !important{
+      	border-color: #2933ff;
+      }      
+      */
+      #table_testData > tbody > tr > td:hover{
+      	border-color: #2933ff;
+      }
+     
+      th:first-child{
+      	left: 0px;
+      	border-left-width: 1px;
+        z-index: 3;
+      }
+
+      tr > td:first-child{
+      	position: sticky;
+      	left: 0px;
+      	z-index: 1;
+      	border-left-width: 1px;
+      }
+
+      tr > td:last-child, th:last-child{
+      	border-right-width: 1px;
+      }
+
+      tr:last-child > td{
+      	border-bottom-width: 1px;
+      }
+
+      #div_dataTableCon{
+      	display: inline-block;
+      	overflow: auto;
+      	resize: both;
+      }
+	  
+	  #table_testData{
+	  	user-select: none;
+	  }
+
+	  #div_autoRefreshButtons{
+	    float: right;
+		text-align: center;
+	  }
+	  
+	  #in_refreshInterval{
+	    width: 100px;
+	    text-align: center;
+	  }
+	  
+	  #lab_refreshInterval,#lab_enableQuickLink,#lab_quickLinkOptions,#lab_enableGraph{
+	    margin-right: 5px;
+	  }
+	  
+	  #div_stopRefresh, #div_quickLinkOptions, #span_graphInstr, #a_download, #div_syslog, #div_report{
+	    display: none;
+	  }
+
+	  #btn_downloadReport{
+	  	margin-bottom: 2px;
+        display: none;  	
+	  }
+
+	  #div_graphArea{
+	  	display: none;
+	  	float: right;
+	  	clear: right;
+	  	position: sticky;
+	  	bottom: 5px;
+	  }
+
+	  #div_main{
+	  	opacity: 0;
+	  }
+
+	  #div_intro{
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        background-color: #000000;
+	  	display: none;
+	  }
+
+	  #div_introCont{
+	  	position: absolute;
+	  	left: 50%;
+	  	top: 50%;
+	  	transform: translate(-50%, -50%);
+	  }
+
+	  #span_intoText{
+	  	font-family: monospace;
+	  	font-size: -webkit-xxx-large;
+	  }
+
+	  #table_syslog > tbody > tr > td{
+	  	border: 0px solid white;
+	  	border-top: 0.5px solid #333333;
+	  	border-bottom: 0.5px solid #333333;
+	  }
+
+	  #table_syslog > tbody{
+	  	user-select: text;
+	  }
+
+	  #div_summaryData{
+      	display: inline-block;
+      	width: 0px;
+      	height: 0px;
+      }
+
+      #btn_tableToggle{
+      	margin-left: 25px;
+      	margin-bottom: 5px;
+      }
+
+      #div_siteSpecificOverlay{
+      	position: absolute;
+      	left: 0px;
+      	top: 0px;
+      	z-index: 10;
+      	width: 100vw;
+      	height: 100vh;
+      	background-color: #000000d4;
+      	display: none; /*Also on HTML Tag*/
+      }
+
+      #div_siteDataCon{
+        width: 75vw;
+        height: 75vh;
+        margin: auto;
+        transform: translateY(15%);
+        background-color: #404040;
+        overflow: hidden scroll;
+      }
+
+      #div_siteDataConClose{
+      	font-size: xxx-large;
+        color: #ff0000;
+        user-select: none;
+        position: relative;
+        left: 96%;
+        top: -1%;
+      }
+
+      #div_siteSpecificDataTableCon {
+      	transform: translate(50%, 0%);
+      }
+
+      #table_siteSpecificData {
+        transform: translate(-15rem, -4%);
+      }
+
+      .ep_hide {
+      	display: none;
+      }
+
+      #table_testData {
+        font-size: 0.9rem;
+      }
+
+      #table_syslog {
+        font-size: 0.9rem;
+      }
+
+      #div_summaryData { max-width: 72vw; overflow: auto; }
+      #div_dataTableCon { max-width: 100%; }
+      #div_autoRefreshButtons { position: relative; z-index: 3; background: black; max-width: 25vw; }
+      /* Keep the legacy Canvas renderer inside a usable scrolling layout. */
+      #div_main { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; }
+      #div_main > h1 { grid-column: 1 / -1; }
+      #div_zoomButtons { display: none; }
+      #div_summaryData, #div_genRunData { grid-column: 1; grid-row: 2; width: auto !important; height: auto !important; max-width: none; overflow: auto; }
+      #div_dataTableCon, #div_genRunTableCon { width: 100% !important; height: auto !important; max-width: none; transform: none !important; overflow: auto; }
+      #div_autoRefreshButtons { grid-column: 2; grid-row: 2; max-width: none; width: 260px !important; transform: none !important; float: none; z-index: auto; }
+      #div_graphArea { grid-column: 1 / -1; grid-row: 3; position: static; transform: none !important; }
+      #div_siteSpecificOverlay { position: fixed; }
+      @media (max-width: 800px) {
+        #div_main { grid-template-columns: minmax(0, 1fr); }
+        #div_autoRefreshButtons { grid-column: 1; grid-row: 3; }
+        #div_graphArea { grid-row: 4; }
+      }
+      #div_syslog { max-width: 100%; overflow: auto; }
+      body { overflow: auto; }
+      #div_genRunData { display: none; }
+    </style>
+  </head>
+  <body>
+<nav aria-label="Demo navigation" style="padding:12px;background:#182634;color:white;position:relative;z-index:2">
+  <strong>SitebossHub · synthetic telemetry</strong> &nbsp;
+  <a style="color:#9edfff" href="/SitebossHub">Dashboard</a> ·
+  <a style="color:#9edfff" href="/EP_SitebossHub">Compact view</a> ·
+  <a style="color:#9edfff" href="/SitebossHistory">History</a> ·
+  <a style="color:#9edfff" href="/demo/report" download>Export snapshot CSV</a>
+  <div style="font-size:0.85rem;margin-top:6px">All sites, addresses and readings are simulated. Device links open local sensor details.</div>
+</nav>
+    <div id="div_intro">
+      <div id="div_introCont">
+        <span id="span_intoText">Developed by Derek Poe</span>
+      </div>
+    </div>
+    <div id="div_main">
+      <h1 style="font-size:1.2rem">Siteboss Hub Compact Overview<button id="btn_tableToggle" onclick="tableToggle()">Summary</button></h1>
+      <div class="ep_hide" id="div_zoomButtons">
+        <span id="span_zoomLabel"></span><button id="btn_zoomOut" onclick="zoomOut()">-</button><button id="btn_zoomIn" onclick="zoomIn()">+</button>
+      </div>
+      <div class="ep_hide" id="div_genRunData">
+        <div id="div_genRunTableCon">
+          <table id="table_genRun"></table>
+          <span id="span_genRunTableDate"></span>
+	    </div>
+      </div>
+      <div id="div_summaryData">
+        <div id="div_dataTableCon">
+          <table id="table_testData"></table>
+	    </div>
+	  </div>
+	  <div id="div_autoRefreshButtons">
+	    <div>
+	      <span id="span_autoRefresh">Auto-Refresh</span><br><br>
+  	      <div id="div_startRefresh">
+            <label id="lab_refreshInterval">Refresh Interval (seconds):</label><br>
+       	    <input id="in_refreshInterval"></input><button id="btn_startAutoRefresh" onclick="startRefresh()">Start</button>
+          </div>
+          <div id="div_stopRefresh">
+	        <span id="span_refreshStatus"></span><br>
+	        <button id="btn_stopAutoRefresh" onclick="stopRefresh()">Stop</button>
+          </div><br><br>
+          <div id="div_graphOptions">
+            <label id="lab_enableGraph">Enable Graphs</label><input id="in_enableGraph" type="checkbox" onclick="toggleGraph()"/><br>
+            <!--<span id="span_graphInstr">(Click Table Data for Graph)</span>-->
+          </div><br><br>
+          <div id="div_quickLink">
+            <label id="lab_enableQuickLink">Enable local device details</label><input id="in_enableQuickLink" type="checkbox" onclick="toggleQuickLink()"/>
+            <div id="div_quickLinkOptions">
+              <select id="sel_quickLinkOptions" hidden><option>Local demo</option></select><br>
+              <span id="span_quickLinkInstruction">(Click an address for simulated sensor details)</span>
+            </div>
+          </div><br><br>
+          <div id="div_siteSpecificDataOptions">
+            <label id="lab_enableSiteSpecificData">Enable Site Details</label><input id="in_enableSiteSpecificData" type="checkbox" onclick="toggleSiteSpecificData()"/>
+          </div><br><br> 
+          <div id="div_syslogOptions">
+            <label id="lab_enableSyslog">Enable Syslog View</label><input id="in_enableSyslog" type="checkbox" onclick="toggleSyslog()"/><br><br>
+          </div>
+        </div>
+        
+        <div id="div_syslog">
+          <table id="table_syslog"></table>
+	    </div>
+	  </div>
+      <div id="div_graphArea">
+        <canvas id="can_graph"></canvas>
+      </div>
+      <a id="a_download"></a>
+      <div id="div_siteSpecificOverlay" style="display: none">
+        <div id="div_siteDataCon">
+          <div id="div_siteDataConClose">
+            <span id="span_siteDataConClose" onclick="toggleSiteSpecificDataOverlay()">x</span>
+          </div>
+          <div id="div_siteSpecificDataTableCon"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      //document.querySelector("#lab_enableSyslog").innerText = "Enable Syslog View (In Progress \uD83D\uDE10)";
+
+      let allData;
+      let histData;
+      let histGetData;
+      let histDataType;
+      let syslogData;
+      let genRunData;
+      let pollSiteData;
+      let validGraph =  false;
+      let graphBuilt = false;
+      let tableBuilt = false;
+	  let updating = false;
+	  let refreshed = false;
+	  let autoStartingRefresh = true;
+	  
+	  let zoomLevel = 1.00;
+	  let sparklineResizeDone = false;
+	  let currentTable = "summary";
+	  let autoRefreshing = false;
+	  let initialTableFill = true;
+	  let selectedSpecificSite = 1;
+
+      document.querySelector("#table_testData").onclick = e => {selectTableClickFunc(e);};
+      document.querySelector("#in_refreshInterval").onkeyup = function(e){if(e.keyCode == 13){startRefresh();}};
+	  
+	  document.querySelector("#span_zoomLabel").innerText = `Zoom (${(Math.round(zoomLevel * 100) / 100) * 100}%):`;
+
+      function stripNP(rdat){
+        if(Array.isArray(rdat)){
+          for(let cust of rdat){
+            Object.keys(cust).forEach(function(prop){
+              if(cust[prop] == "_NP"){
+                cust[prop] = "";
+              }
+            });
+          }
+        }
+        else{
+          Object.keys(rdat).forEach(function(prop){
+            if(rdat[prop] == "_NP"){
+              rdat[prop] = "";
+            }
+          });
+        }
+        return rdat;
+      }
+
+      function buildTable(){
+        let tableRows = allData.length + 1;
+        let tableCols = Object.keys(allData[0]).length;
+        let tableCont = "";
+        for(let i = 0; i < tableRows; i++){
+          tableCont += "<tr>";
+          for(let ii = 0; ii < tableCols; ii++){
+            if(i === 0){
+              tableCont += `<th>${Object.keys(allData[0])[ii]}</th>`;
+              //console.log(Object.keys(allData[0])[ii]);
+            }
+            else{
+              tableCont += "<td></td>";
+            }
+          }
+          tableCont += "</tr>";
+        }
+        document.querySelector("#table_testData").innerHTML = tableCont;
+        tableBuilt = true;
+      }
+
+      function fillTable(){
+      	document.querySelector("#table_testData > tbody > tr:nth-child(1) > th:nth-child(1)").innerText = "CellSite";
+        for(let i = 0; i < allData.length; i++){
+          for(let ii = 0; ii < Object.keys(allData[0]).length; ii++){
+          	let cellPos;
+          	for(let iii = 0; iii < document.querySelector("#table_testData > tbody > tr:first-child").childNodes.length; iii++){
+          	  if(Object.keys(allData[i])[ii] === document.querySelector(`#table_testData > tbody > tr:first-child > th:nth-child(${iii + 1})`).innerText){
+          	  	cellPos = iii;
+          	  	break;
+          	  }
+          	  //console.log(`${Object.keys(allData[i])[ii]} ${document.querySelector(`#table_testData > tbody > tr:first-child > th:nth-child(${iii + 1})`).innerText}`);
+          	}
+          	//
+          	//
+          	//
+
+          	//cellPos = 0;
+          	
+          	//
+          	//
+          	//
+          	let cell = document.querySelector(`#table_testData > tbody > tr:nth-child(${i + 2}) > td:nth-child(${cellPos + 1})`);
+            let site = parseInt(allData[i]["CellSite"]);
+            let cellVal = allData[i][Object.keys(allData[0])[ii]];
+            cell.style.backgroundColor = "black";
+            switch(Object.keys(allData[0])[ii]){
+              case "Temp":
+                if(cellVal !== ""){
+                  cell.innerText = cellVal;
+                  let cellCheck = parseInt(cellVal);
+                  switch(true){
+                    case (cellCheck >= 90):
+                      cell.style.backgroundColor = "red";
+                      break;
+                    case (cellCheck >= 80):
+                      cell.style.backgroundColor = "orange";
+                      break;
+                    default:
+                      cell.style.backgroundColor = "black";
+                  }
+                }
+                break;
+              case "Humid":
+                if(cellVal !== ""){
+                  cell.innerText = `${cellVal}%`;
+                  let cellCheck = parseInt(cellVal);
+                  switch(true){
+                    case (cellCheck >= 85):
+                      cell.style.backgroundColor = "red";
+                      break;
+                    case (cellCheck >= 70):
+                      //console.log("HIT!");
+                      cell.style.backgroundColor = "orange";
+                      break;
+                    default:
+                      cell.style.backgroundColor = "black";
+                  }
+                }
+                break;
+              case "Door":
+                if(cellVal !== ""){
+                  cell.innerText = cellVal;
+                  if(cellVal !== "Door Closed"){
+                    cell.style.backgroundColor = "red";
+                  }
+                }
+                break;
+              case "Battery":
+                if(cellVal !== ""){
+                  cell.innerText = cellVal;
+                  if(cellVal !== "Battery Charging"){
+                  	//console.log("HIT!");
+                    //console.log(cell);
+                    //console.log(cellVal);
+                  	cell.style.backgroundColor = "red";
+                  }
+                }
+                break;
+              case "Propane":
+                if(cellVal !== ""){
+                  cell.innerText = cellVal;
+                  if(!(/MAN/i.test(cell.parentNode.firstChild.innerText))){               
+                    cellVal = parseInt(cellVal);
+                    switch(true){
+                      case (cellVal <= 100):
+                        cell.style.backgroundColor = "red";
+                        break;
+                      case (cellVal <= 200):
+                        cell.style.backgroundColor = "orange";
+                        break;
+                      default:
+                        cell.style.backgroundColor = "black";
+                    }
+                  }
+                  else{
+                    if(cellVal !== "Fuel Normal"){
+                      cell.style.backgroundColor = "red";
+                    }
+                  }
+                }
+                break;
+              case "Generator":
+                if(cellVal !== ""){
+                  cell.innerText = cellVal;
+                  if(cellVal !== "Generator OFF" && !(/MAN/i.test(cell.parentNode.firstChild.innerText))){
+                  	cell.style.backgroundColor = "red";
+                  }
+                  else if(cellVal !== "Generator ON" && (/MAN/i.test(cell.parentNode.firstChild.innerText))){
+                    cell.style.backgroundColor = "red";
+                  }
+                }
+                break;
+              case "LightBeacon":
+              case "LightObstruction":
+              case "Photocell":
+                if(cellVal !== ""){
+                  cell.innerText = cellVal;
+                  if(cellVal !== "Normal"){
+                  	cell.style.backgroundColor = "red";
+                  }
+                  else{
+                    cell.style.backgroundColor = "black";
+                  }
+                }
+                break;
+              case "Uptime":
+                if(cellVal !== ""){
+                  cellVal = parseInt(cellVal);
+                  let days = Math.floor((cellVal / 100) / (3600 * 24));
+                  let time = new Date((cellVal / 100) * 1000).toISOString().substr(11, 8);
+                  cellVal = `${days}.${time}`;
+                  cell.innerText = cellVal;
+                }
+                break;
+              case "Ping":
+                cell.innerText = cellVal;
+                if(cellVal === "Unreachable"){
+                  cell.style.backgroundColor = "gray";
+                  for(let iii = 0; iii < (document.querySelectorAll(`#table_testData > tbody > tr:nth-child(${0+2}) > td`)).length; iii++){
+                    if(
+                      document.querySelector(`#table_testData > tbody > tr:nth-child(1) > th:nth-child(${iii+1})`).innerText !== "CellSite" &&
+                      document.querySelector(`#table_testData > tbody > tr:nth-child(1) > th:nth-child(${iii+1})`).innerText !== "IP" &&
+                      document.querySelector(`#table_testData > tbody > tr:nth-child(1) > th:nth-child(${iii+1})`).innerText !== "Ping" &&
+                      document.querySelector(`#table_testData > tbody > tr:nth-child(1) > th:nth-child(${iii+1})`).innerText !== "LastUpdated"
+                    ){
+                      document.querySelector(`#table_testData > tbody > tr:nth-child(${i+2}) > td:nth-child(${iii+1})`).innerText = "";
+                      document.querySelector(`#table_testData > tbody > tr:nth-child(${i+2}) > td:nth-child(${iii+1})`).style.backgroundColor = "gray";
+                    }
+                  }
+                }
+                else{
+                  cell.style.backgroundColor = "black";
+                }
+                break;
+              default:
+                cell.innerText = cellVal;
+            }
+          }
+        }
+        document.querySelector("#table_testData > tbody > tr:nth-child(1) > th:nth-child(1)").innerText = "Site";
+        if(!(refreshed)){
+		  //document.querySelector("#table_testData").style.width = (document.querySelector("#table_testData > tbody").clientWidth + 5) + "px";
+		  //document.querySelector("#div_dataTableCon").style.width = (document.querySelector("#table_testData").clientWidth + 18) + "px";
+		  document.querySelector("#div_dataTableCon").style.width = (document.querySelector("#table_testData > tbody").clientWidth + 18) + "px";
+		  document.querySelector("#div_dataTableCon").style.height = (window.innerHeight - 74) + "px";
+        }
+      }
+	  
+	  function startRefresh(){
+	    let interval = parseInt(document.querySelector("#in_refreshInterval").value);
+		if(interval > 0){
+          if(!!(autoStartingRefresh)){
+          	if(currentTable === "summary"){
+		      getAllData();
+		      setTimeout(()=>{
+	            updating = setInterval(getAllData,(interval * 1000));
+		      },(interval * 1000));
+          	}
+          	else if(currentTable === "genRun"){
+          	  getGenRunData();
+          	  setTimeout(()=>{
+	            updating = setInterval(getGenRunData,(interval * 1000));
+		      },(interval * 1000));
+          	}
+          }
+		  document.querySelector("#span_refreshStatus").innerText = `Refreshing Every ${interval} Seconds`;
+		  document.querySelector("#div_startRefresh").style.display = "none";
+		  document.querySelector("#div_stopRefresh").style.display = "block";
+		  refreshed = true;
+	    }
+	    autoStartingRefresh = false;
+	    autoRefreshing = true;
+	  }
+	  
+	  function stopRefresh(){
+	    clearInterval(updating);
+		document.querySelector("#div_startRefresh").style.display = "block";
+		document.querySelector("#div_stopRefresh").style.display = "none";
+		autoRefreshing = false;
+	  }
+
+	  function toggleQuickLink(){
+	  	if(document.querySelector("#in_enableQuickLink").checked){
+	  	  document.querySelector("#div_quickLinkOptions").style.display = "block";
+	  	  document.querySelectorAll("#table_testData > tbody > tr > td:nth-child(2)").forEach(cell=>{
+	  	  	cell.style.color = "#3fc4ff";
+	  	  });
+	  	}
+	  	else{
+	      document.querySelector("#div_quickLinkOptions").style.display = "none";
+	      document.querySelectorAll("#table_testData > tbody > tr > td:nth-child(2)").forEach(cell=>{
+	  	  	cell.style.color = "white";
+	  	  });
+	  	}
+	  }
+
+	  function toggleSiteSpecificData(){
+	  	if(document.querySelector("#in_enableSiteSpecificData").checked){
+	  	  document.querySelectorAll("#table_testData > tbody > tr > td:first-child").forEach(cell=>{
+	  	  	cell.style.color = "#ffff00";
+	  	  });
+	  	}
+	  	else{
+	      document.querySelectorAll("#table_testData > tbody > tr > td:first-child").forEach(cell=>{
+	  	  	cell.style.color = "#ffffff";
+	  	  });
+	  	}
+	  }
+
+	  function openQuickLink(e){
+        if(document.querySelector("#in_enableQuickLink").checked){
+          selectedSpecificSite = e.target.closest("tr").firstElementChild.innerText;
+          toggleSiteSpecificDataOverlay();
+          pollSite(selectedSpecificSite);
+        }
+      }
+
+      
+
+	  function openSiteSpecificData(e){
+	  	if(document.querySelector("#in_enableSiteSpecificData").checked){
+          selectedSpecificSite = e.target.innerText;
+          toggleSiteSpecificDataOverlay();
+          pollSite(selectedSpecificSite);
+	  	}
+	  }
+
+	  function displayPrintView(){
+	    document.querySelectorAll("Body *:not(#div_dataTableCon):not(#table_testData):not(tbody):not(tr):not(th):not(td)").forEach(el=>{
+	      el.style.display = "none";
+	    });
+	    document.querySelector("#div_dataTableCon").style.overflow = "visible";
+	    document.querySelector("#table_testData").style.display = "table";
+	    document.querySelector("#table_testData").style.margin = "auto";
+	    document.querySelector("#div_dataTableCon").style.width = "100%";
+	    document.querySelector("#div_dataTableCon").style.height = "100%";
+	    window.scrollTo(0,0);
+	    document.querySelector("#div_dataTableCon").style.resize = "none";
+	    window.onscroll = () => {window.scrollTo(0,0)};
+	  }
+
+	  function startGraph(e){
+	  	let target = e.target;
+	  	if(e.target.localName === "canvas"){
+	  	  target = e.target.parentElement;
+	  	}
+        if(document.querySelector("#in_enableGraph").checked && target.localName === "td"){
+	      let header = document.querySelector(`#table_testData > tbody > tr:first-child > th:nth-child(${target.cellIndex + 1})`).innerText;
+	      //let header = document.querySelector("#table_testData > tbody > tr:first-child").childNodes[target.cellIndex].innerText;
+	      if(header === ""){
+	      	header = document.querySelector(`#table_testData > tbody > tr:first-child > th:nth-child(${target.cellIndex})`).innerText;
+	      }
+	      if(
+            header !== "Site" &&
+            header !== "IP" &&
+            header !== "Uptime" &&
+            header !== "LastUpdated"
+	      ){
+            histDataType = header;
+            validGraph = true;
+	      }
+	      else{
+	      	validGraph = false;
+	      }
+          
+          if(validGraph){
+	        histGetData = target.parentNode.childNodes[0].innerText + "," + histDataType;
+	        getHistData();
+          }
+	    }
+	  }
+
+	  function buildGraph(){
+        let title;
+        let unit;
+        let boolGraph = false;
+
+        //console.log(histDataType);
+
+        switch(histDataType){
+          case "Temp":
+            title = "Temperature";
+            unit = "F";
+            break;
+          
+          case "Humid":
+            title = "Humidity";
+            unit = "%";
+            break;
+
+          case "Propane":
+            title = "Propane";
+            unit = "Gal";
+            break;
+          
+          case "Door":
+            title = "Door";
+            boolGraph = true;
+            break;
+          
+          case "Battery":
+            title = "Battery";
+            boolGraph = true;
+            break;
+          
+          case "Generator":
+            title = "Generator";
+            boolGraph = true;
+            break;
+          
+          case "Ping":
+            title = "Ping";
+            boolGraph = true;
+            break;
+          
+          default:
+            title = histDataType;
+            unit = "";
+        }
+
+        //console.log(boolGraph);
+
+        if(!(boolGraph) && validGraph){
+	      let rData = histData;
+	      //console.log(rData);
+	      let data = [];
+	      let tData = [];
+	      for(let i = 0; i < Object.values(rData[0]).length; i++){
+	      	let d = parseFloat(Object.values(rData[0])[i]);
+	        if(!(isNaN(d))){
+	      	  data.push(d);
+	      	  tData.push(Object.values(rData[0])[i]);
+	      	}
+	      }
+
+	      //console.log(data);
+	      //console.log(tData); 
+	    
+	      let graph = document.querySelector("#can_graph");
+          graph.width = 400;
+          graph.height = 300;
+        
+          let ctx = graph.getContext("2d");
+          //ctx.fillStyle = "#00e000";
+          let dMax = Math.max(...data);
+          let dMin = Math.min(...data);
+          let dWidth = dMax - dMin;
+          let drawMarX =  graph.width * 0.10;
+          let drawMarY = graph.height * 0.10;
+          let spreadDistX = (graph.width - (drawMarX * 2)) / (data.length - 1);
+          let spreadDistY = (graph.height - (drawMarY * 2)) / (data.length - 1);
+          let pX = drawMarX;
+          let firstPoint = true;
+          ctx.strokeStyle = "#000000";
+          let sY = drawMarY;
+          let gYA = [];
+          for(let dVal of data){
+            ctx.beginPath();
+            ctx.moveTo(pX, drawMarY);
+            ctx.lineTo(pX, (graph.height - drawMarY));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(drawMarX, sY);
+            ctx.lineTo((graph.width - drawMarX), sY);
+            ctx.stroke();
+            gYA.push(sY);         
+            pX += spreadDistX;
+            sY += spreadDistY;
+          }
+          pX = drawMarX;
+          ctx.strokeStyle = "#00e000";
+          ctx.fillStyle = "#00e000";
+          let pYA = [];
+          for(let dVal of data){
+            let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            pYA.push(pY);
+            //console.log(pY + ":" + drawMarY);     
+            ctx.beginPath();
+            ctx.arc(pX,pY,3,0,(2*Math.PI));
+            ctx.fill();
+            //ctx.fillRect(pX, pY, 4, 4);
+            pX += spreadDistX;
+          }
+          pX = drawMarX;
+          ctx.beginPath();     
+          ctx.strokeStyle = "#00e000";
+          for(let pY of pYA){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            if(isNaN(pY)){
+              pY = graph.height / 2;
+            }
+            if(firstPoint){
+              ctx.moveTo(pX, pY);
+              firstPoint = false;
+            }
+            else{
+              ctx.lineTo(pX, pY);
+              ctx.stroke();
+            }
+            pX += spreadDistX;
+          }
+          ctx.putImageData((ctx.getImageData(0,0,graph.width,graph.height)),18,5);
+          let gLabs = [];
+          gLabs.push(dMin);
+          gLabs.push(dMax);
+          let gLabSpread = (dMax - dMin) / (data.length - 1);
+          for(let i = 0; i < (data.length - 2); i++){
+            gLabs.push(Math.round((dMin + (gLabSpread * (i + 1))) * 10) / 10);
+          }
+          //console.log(data);
+          //console.log(gLabs);
+          gLabs = gLabs.sort((b,a)=>{return a-b});
+          ctx.fillStyle = "#ffffff";
+          for(let i = 0; i < data.length; i++){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            let gY = gYA[i];
+            if(isNaN(gY)){
+              pY = graph.height / 2;
+            }
+            ctx.font = "10px Arial";
+            ctx.fillText(`${gLabs[i]} ${unit}`,drawMarX - 27, (gY + 5));
+          }
+          ctx.font = "15px Arial";
+          ctx.fillText(`(${histGetData.split(",")[0]}) ${title}`,((graph.width / 2) - 35), ((drawMarY / 2) + 5));
+        }
+        else if(validGraph){
+          rData = histData;
+	      let data = [];
+	      let tData = [];
+	      for(let i = 0; i < Object.values(rData[0]).length; i++){
+	        if(Object.values(rData[0])[i] !== ""){
+	          switch(Object.values(rData[0])[i]){
+	            case "Door Closed":
+	            case "Battery Charging":
+	            case "Generator OFF":
+	            case "Reachable":
+	              data.push(0);
+	              break;
+	            default:
+	              data.push(1);
+	          }
+	          tData.push(Object.values(rData[0])[i]);
+	        }
+  	      }
+  	      let gLabs;
+  	      switch(histDataType){
+  	      	case "Door":
+  	      	  gLabs = ["Open","Closed"];
+  	      	  break;
+  	      	case "Battery":
+  	      	case "Generator":
+  	      	  gLabs = ["On","Off"];
+  	      	  break;
+  	      	case "Ping":
+  	      	  gLabs = ["No Ping","Ping"];
+  	      	  break;
+  	      }
+
+	      //console.log(data);  
+	    
+	      let graph = document.querySelector("#can_graph");
+          graph.width = 400;
+          graph.height = 300;
+        
+          let ctx = graph.getContext("2d");
+          //ctx.fillStyle = "#00e000";
+          let dMax = Math.max(...data);
+          let dMin = Math.min(...data);
+          let dWidth = dMax - dMin;
+          let drawMarX =  graph.width * 0.10;
+          let drawMarY = graph.height * 0.10;
+          let spreadDistX = (graph.width - (drawMarX * 2)) / (data.length - 1);
+          let spreadDistY = (graph.height - (drawMarY * 2)) / (data.length - 1);
+          let pX = drawMarX;
+          let firstPoint = true;
+          ctx.strokeStyle = "#000000";
+          let sY = drawMarY;
+          let gYA = [];
+          for(let dVal of data){
+            ctx.beginPath();
+            ctx.moveTo(pX, drawMarY);
+            ctx.lineTo(pX, (graph.height - drawMarY));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.stroke();
+            gYA.push(sY);         
+            pX += spreadDistX;
+            sY += spreadDistY;
+          }
+          ctx.beginPath();
+          ctx.moveTo(drawMarX, drawMarY);
+          ctx.lineTo((graph.width - drawMarX), drawMarY);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(drawMarX, (graph.height - drawMarY));
+          ctx.lineTo((graph.width - drawMarX), (graph.height - drawMarY));
+          ctx.stroke();
+          pX = drawMarX;
+          ctx.strokeStyle = "#00e000";
+          ctx.fillStyle = "#00e000";
+          let pYA = [];
+          for(let dVal of data){
+            let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            pYA.push(pY);
+            //console.log(pY + ":" + drawMarY);     
+            ctx.beginPath();
+            ctx.arc(pX,pY,3,0,(2*Math.PI));
+            ctx.fill();
+            //ctx.fillRect(pX, pY, 4, 4);
+            pX += spreadDistX;
+          }
+          pX = drawMarX;
+          ctx.beginPath();     
+          ctx.strokeStyle = "#00e000";
+          for(let pY of pYA){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            if(isNaN(pY)){
+              pY = graph.height / 2;
+            }
+            if(firstPoint){
+              ctx.moveTo(pX, pY);
+              firstPoint = false;
+            }
+            else{
+              ctx.lineTo(pX, pY);
+              ctx.stroke();
+            }
+            pX += spreadDistX;
+          }
+          ctx.putImageData((ctx.getImageData(0,0,graph.width,graph.height)),18,5);;
+          ctx.fillStyle = "#ffffff";
+          
+          ctx.font = "10px Arial";
+          ctx.fillText(gLabs[0],drawMarX - 27, (drawMarY + 5));
+          ctx.fillText(gLabs[1],drawMarX - 27, ((graph.height - drawMarY) + 5));
+          
+          ctx.font = "15px Arial";
+          ctx.fillText(`(${histGetData.split(",")[0]}) ${title}`,((graph.width / 2) - 35), ((drawMarY / 2) + 5));
+        }
+
+        document.querySelector("#div_graphArea").style.display = "block";
+        graphBuilt = true;
+        
+	  }
+
+/*
+//For HistTable2
+	  function buildGraph(){
+        let title;
+        let unit;
+        let boolGraph = false;
+
+        //console.log(histDataType);
+
+        switch(histDataType){
+          case "Temp":
+            title = "Temperature";
+            unit = "F";
+            break;
+          
+          case "Humid":
+            title = "Humidity";
+            unit = "%";
+            break;
+
+          case "Propane":
+            title = "Propane";
+            unit = "Gal";
+            break;
+          
+          case "Door":
+            title = "Door";
+            boolGraph = true;
+            break;
+          
+          case "Battery":
+            title = "Battery";
+            boolGraph = true;
+            break;
+          
+          case "Generator":
+            title = "Generator";
+            boolGraph = true;
+            break;
+          
+          case "Ping":
+            title = "Ping";
+            boolGraph = true;
+            break;
+          
+          default:
+            title = histDataType;
+            unit = "";
+        }
+
+        if(!(boolGraph) && validGraph){
+	      let rData = histData;
+	      let data = [];
+	      let tData = [];
+	      for(let i = 0; i < rData.length; i++){
+	      	let d = parseFloat(Object.values(rData[i])[0]);
+	      	if(!(isNaN(d))){
+	      	  data.push(d);
+	      	  tData.push(Object.values(rData[i])[1]);
+	      	}
+	      }
+
+	      //console.log(data);  
+	    
+	      let graph = document.querySelector("#can_graph");
+          graph.width = 400;
+          graph.height = 300;
+        
+          let ctx = graph.getContext("2d");
+          //ctx.fillStyle = "#00e000";
+          let dMax = Math.max(...data);
+          let dMin = Math.min(...data);
+          let dWidth = dMax - dMin;
+          let drawMarX =  graph.width * 0.10;
+          let drawMarY = graph.height * 0.10;
+          let spreadDistX = (graph.width - (drawMarX * 2)) / (data.length - 1);
+          let spreadDistY = (graph.height - (drawMarY * 2)) / (data.length - 1);
+          let pX = drawMarX;
+          let firstPoint = true;
+          ctx.strokeStyle = "#000000";
+          let sY = drawMarY;
+          let gYA = [];
+          for(let dVal of data){
+            ctx.beginPath();
+            ctx.moveTo(pX, drawMarY);
+            ctx.lineTo(pX, (graph.height - drawMarY));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(drawMarX, sY);
+            ctx.lineTo((graph.width - drawMarX), sY);
+            ctx.stroke();
+            gYA.push(sY);         
+            pX += spreadDistX;
+            sY += spreadDistY;
+          }
+          pX = drawMarX;
+          ctx.strokeStyle = "#00e000";
+          ctx.fillStyle = "#00e000";
+          let pYA = [];
+          for(let dVal of data){
+            let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            pYA.push(pY);
+            //console.log(pY + ":" + drawMarY);     
+            ctx.beginPath();
+            ctx.arc(pX,pY,3,0,(2*Math.PI));
+            ctx.fill();
+            //ctx.fillRect(pX, pY, 4, 4);
+            pX += spreadDistX;
+          }
+          pX = drawMarX;
+          ctx.beginPath();     
+          ctx.strokeStyle = "#00e000";
+          for(let pY of pYA){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            if(isNaN(pY)){
+              pY = graph.height / 2;
+            }
+            if(firstPoint){
+              ctx.moveTo(pX, pY);
+              firstPoint = false;
+            }
+            else{
+              ctx.lineTo(pX, pY);
+              ctx.stroke();
+            }
+            pX += spreadDistX;
+          }
+          ctx.putImageData((ctx.getImageData(0,0,graph.width,graph.height)),18,5);
+          let gLabs = [];
+          gLabs.push(dMin);
+          gLabs.push(dMax);
+          let gLabSpread = (dMax - dMin) / (data.length - 1);
+          for(let i = 0; i < (data.length - 2); i++){
+            gLabs.push(Math.round((dMin + (gLabSpread * (i + 1))) * 10) / 10);
+          }
+          //console.log(data);
+          //console.log(gLabs);
+          gLabs = gLabs.sort((b,a)=>{return a-b});
+          ctx.fillStyle = "#ffffff";
+          for(let i = 0; i < data.length; i++){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            let gY = gYA[i];
+            if(isNaN(gY)){
+              pY = graph.height / 2;
+            }
+            ctx.font = "10px Arial";
+            ctx.fillText(`${gLabs[i]} ${unit}`,drawMarX - 27, (gY + 5));
+          }
+          ctx.font = "15px Arial";
+          ctx.fillText(`(${histGetData.split(",")[0]}) ${title}`,((graph.width / 2) - 35), ((drawMarY / 2) + 5));
+        }
+        else if(validGraph){
+          rData = histData;
+	      let data = [];
+	      let tData = [];
+	      for(let i = 0; i < rData.length; i++){
+	        if(Object.values(rData[i])[0] !== ""){
+	          switch(Object.values(rData[i])[0]){
+	            case "Door Closed":
+	            case "Battery Charging":
+	            case "Generator OFF":
+	            case "Reachable":
+	              data.push(0);
+	              break;
+	            default:
+	              data.push(1);
+	          }
+	          tData.push(Object.values(rData[i])[1]);
+	        }
+  	      }
+  	      let gLabs;
+  	      switch(histDataType){
+  	      	case "Door":
+  	      	  gLabs = ["Open","Closed"];
+  	      	  break;
+  	      	case "Battery":
+  	      	case "Generator":
+  	      	  gLabs = ["On","Off"];
+  	      	  break;
+  	      	case "Ping":
+  	      	  gLabs = ["No Ping","Ping"];
+  	      	  break;
+  	      }
+
+	      //console.log(data);  
+	    
+	      let graph = document.querySelector("#can_graph");
+          graph.width = 400;
+          graph.height = 300;
+        
+          let ctx = graph.getContext("2d");
+          //ctx.fillStyle = "#00e000";
+          let dMax = Math.max(...data);
+          let dMin = Math.min(...data);
+          let dWidth = dMax - dMin;
+          let drawMarX =  graph.width * 0.10;
+          let drawMarY = graph.height * 0.10;
+          let spreadDistX = (graph.width - (drawMarX * 2)) / (data.length - 1);
+          let spreadDistY = (graph.height - (drawMarY * 2)) / (data.length - 1);
+          let pX = drawMarX;
+          let firstPoint = true;
+          ctx.strokeStyle = "#000000";
+          let sY = drawMarY;
+          let gYA = [];
+          for(let dVal of data){
+            ctx.beginPath();
+            ctx.moveTo(pX, drawMarY);
+            ctx.lineTo(pX, (graph.height - drawMarY));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.stroke();
+            gYA.push(sY);         
+            pX += spreadDistX;
+            sY += spreadDistY;
+          }
+          ctx.beginPath();
+          ctx.moveTo(drawMarX, drawMarY);
+          ctx.lineTo((graph.width - drawMarX), drawMarY);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(drawMarX, (graph.height - drawMarY));
+          ctx.lineTo((graph.width - drawMarX), (graph.height - drawMarY));
+          ctx.stroke();
+          pX = drawMarX;
+          ctx.strokeStyle = "#00e000";
+          ctx.fillStyle = "#00e000";
+          let pYA = [];
+          for(let dVal of data){
+            let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            pYA.push(pY);
+            //console.log(pY + ":" + drawMarY);     
+            ctx.beginPath();
+            ctx.arc(pX,pY,3,0,(2*Math.PI));
+            ctx.fill();
+            //ctx.fillRect(pX, pY, 4, 4);
+            pX += spreadDistX;
+          }
+          pX = drawMarX;
+          ctx.beginPath();     
+          ctx.strokeStyle = "#00e000";
+          for(let pY of pYA){
+            //let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+            if(isNaN(pY)){
+              pY = graph.height / 2;
+            }
+            if(firstPoint){
+              ctx.moveTo(pX, pY);
+              firstPoint = false;
+            }
+            else{
+              ctx.lineTo(pX, pY);
+              ctx.stroke();
+            }
+            pX += spreadDistX;
+          }
+          ctx.putImageData((ctx.getImageData(0,0,graph.width,graph.height)),18,5);;
+          ctx.fillStyle = "#ffffff";
+          
+          ctx.font = "10px Arial";
+          ctx.fillText(gLabs[0],drawMarX - 27, (drawMarY + 5));
+          ctx.fillText(gLabs[1],drawMarX - 27, ((graph.height - drawMarY) + 5));
+          
+          ctx.font = "15px Arial";
+          ctx.fillText(`(${histGetData.split(",")[0]}) ${title}`,((graph.width / 2) - 35), ((drawMarY / 2) + 5));
+        }
+
+        document.querySelector("#div_graphArea").style.display = "block";
+        graphBuilt = true;
+        
+	  }
+*/
+
+	  function buildSparklineGraphs(){
+	  	for(let i = 0; i < (document.querySelectorAll("#table_testData > tbody > tr").length - 1); i++){
+	  	  let graphIns = [];
+	  	  for(let ii = 0; ii < document.querySelectorAll("#table_testData > tbody > tr:first-child > th").length; ii++){
+            if(document.querySelector(`#table_testData > tbody > tr:first-child > th:nth-child(${ii + 1})`).innerText === ""){
+              graphIns.push(document.querySelector(`#table_testData > tbody > tr:first-child > th:nth-child(${ii + 1})`).cellIndex);
+            }
+	  	  }
+	  	  for(gIn of graphIns){
+            if(document.querySelector(`#table_testData > tbody > tr:nth-child(${i + 2}) > td:nth-child(${gIn})`).style.backgroundColor !== "gray"){
+	  	  	  document.querySelector(`#table_testData > tbody > tr:nth-child(${i + 2}) > td:nth-child(${gIn + 1})`).innerHTML = "";
+	  	  	  document.querySelector(`#table_testData > tbody > tr:nth-child(${i + 2}) > td:nth-child(${gIn + 1})`).backgroundColor = "#000000";
+    	  	  let dType = document.querySelector(`#table_testData > tbody > tr:first-child > th:nth-child(${gIn})`).innerText;
+	  	  	  let boolGraph = false;
+              switch(dType){       
+                case "Door":        
+                case "Battery":                
+                case "Generator":                
+                case "Ping":
+                case "LightBeacon":
+                case "LightObstruction":
+                case "Photocell":  
+                  boolGraph = true;
+                  break;
+              }
+              let rawData = [];
+              for(let ii = 1; ii < 8; ii++){
+                if(histAllData[i][`${dType}${ii}`] !== undefined){
+              	  rawData.push(histAllData[i][`${dType}${ii}`]);
+                }
+              }
+              let data = [];
+              if(!(boolGraph)){
+                for(let ii = 0; ii < rawData.length; ii++){
+                  if(rawData[ii].indexOf(".") < 0){
+	                d = parseInt(rawData[ii]);
+                  }
+                  else{
+                    d = parseFloat(rawData[ii]);
+                  }
+	              if(!(isNaN(d))){
+     	            data.push(d);
+	              }
+  	            }
+              }
+              else{
+                for(let ii = 0; ii < rawData.length; ii++){
+	              if(rawData[ii] !== ""){
+	                switch(rawData[ii]){
+	                  case "Door Closed":
+	                  case "Battery Charging":
+	                  case "Generator OFF":
+	                  case "Reachable":
+	                  case "Normal":
+	                    data.push(0); 
+	                    break;
+	                  default:
+	                    data.push(1);
+	                }
+	              }
+  	            }
+              }
+              let graph = document.createElement("canvas");
+              graph.width = 37.5;
+              graph.height = 25;       
+              let ctx = graph.getContext("2d");
+              let dMax = Math.max(...data);
+              let dMin = Math.min(...data);
+              let dWidth = dMax - dMin;
+              //let drawMarX =  graph.width * 0.02;
+              let drawMarX =  0;
+              let drawMarY = graph.height * 0.03;
+              //let drawMarY =  0;
+              let spreadDistX = (graph.width - (drawMarX * 2)) / (data.length - 1);
+              let spreadDistY = (graph.height - (drawMarY * 2)) / (data.length - 1);
+              let pX = drawMarX;
+              let firstPoint = true;
+              let pYA = [];
+              for(let dVal of data){
+                let pY = Math.round((((dMax - dVal) / dWidth) * (graph.height - (drawMarY * 2))) + drawMarY);
+                pYA.push(pY);     
+              }          
+              pX = drawMarX;
+              ctx.beginPath();     
+              ctx.strokeStyle = "#00e000";
+              for(let pY of pYA){
+                if(isNaN(pY)){
+                  pY = graph.height / 2;
+                }
+                if(firstPoint){
+                  ctx.moveTo(pX, pY);
+                  firstPoint = false;
+                }
+                else{
+                  ctx.lineTo(pX, pY);
+                  ctx.stroke();
+                }
+                pX += spreadDistX;
+              }
+              document.querySelector(`#table_testData > tbody > tr:nth-child(${i + 2}) > td:nth-child(${gIn + 1})`).appendChild(graph);
+	  	    }
+	  	    else{
+	  	      document.querySelector(`#table_testData > tbody > tr:nth-child(${i + 2}) > td:nth-child(${gIn + 1})`).innerHTML = "";
+	  	      document.querySelector(`#table_testData > tbody > tr:nth-child(${i + 2}) > td:nth-child(${gIn + 1})`).style.backgroundColor = "gray";
+	  	    }
+	  	  }
+	  	}
+	  }
+
+	  function selectTableClickFunc(e){
+	    if(e.target === e.target.parentNode.childNodes[0]){
+          openSiteSpecificData(e);
+	  	}
+	  	if(e.target === e.target.parentNode.childNodes[1]){
+          openQuickLink(e);
+	  	}
+	  	else if(
+          e.target !== e.target.parentNode.childNodes[0] ||
+          e.target !== e.target.parentNode.childNodes[8] ||
+          e.target !== e.target.parentNode.childNodes[10]
+	  	){
+	      //startGraph(e);
+	  	}
+	  }
+
+      function getHistData(){
+        histGet = new XMLHttpRequest();
+        histGet.onreadystatechange = function(){
+          if(this.readyState == 4 && this.status == 200){
+            if(histGet.responseText !== ""){
+              histData = JSON.parse(histGet.responseText);
+                if(!(Array.isArray(histData))){
+                  histData = [histData];
+                }
+              hisAllData = stripNP(histData);
+              buildGraph();
+            }
+          }
+        };
+        histGet.open("GET", ("/demo/hist/" + histGetData), true);
+        histGet.send();
+      }
+
+      function getAllHistData(){
+        histAllGet = new XMLHttpRequest();
+        histAllGet.onreadystatechange = function(){
+          if(this.readyState == 4 && this.status == 200){
+            histAllData = JSON.parse(histAllGet.responseText);
+              if(!(Array.isArray(histAllData))){
+                histAllData = [histAllData];
+              }
+            hisAllData = stripNP(histAllData);
+            buildSparklineGraphs();
+            if(!(sparklineResizeDone)){
+              document.querySelector("#div_dataTableCon").style.width = (document.querySelector("#table_testData > tbody").clientWidth + 18) + "px";
+      	      document.querySelector("#div_dataTableCon").style.height = (document.querySelector("#table_testData > tbody").clientHeight + 18) + "px";
+              sparklineResizeDone = true;
+            }
+          }
+        };
+        histAllGet.open("GET", "/demo/histAll", true);
+        histAllGet.send();
+      }
+
+      function toggleGraph(){
+      	toggleSparkline();
+      	if(document.querySelector("#in_enableGraph").checked){
+          //document.querySelector("#span_graphInstr").style.display = "block";
+      	}
+      	else{
+          document.querySelector("#span_graphInstr").style.display = "none";
+      	  document.querySelector("#div_graphArea").style.display = "none";
+      	}
+      	document.querySelector("#div_dataTableCon").style.width = document.querySelector("#table_testData").clientWidth + "px";
+      }
+
+      function toggleSparkline(){
+      	if(document.querySelector("#in_enableGraph").checked){
+      	  let inPos = [];
+      	  document.querySelectorAll("#table_testData > tbody > tr:first-child > th").forEach(th => {
+      	    if(
+              th.innerText !== "Site" &&
+              th.innerText !== "IP" &&
+              th.innerText !== "Uptime" &&
+              th.innerText !== "LastUpdated"
+        	){
+        	  inPos.push(th.cellIndex);
+      	    }
+      	  });
+      	  inPos.sort((b,a)=>{return a-b});
+      	  inPos.forEach(pos => {
+      	    let col = pos + 1;
+      	    for(let i = 1; i < document.querySelectorAll("#table_testData > tbody > tr").length; i++){
+      	  	  let row = i + 1;
+      	  	  let td = document.querySelector(`#table_testData > tbody > tr:nth-child(${row}) > td:nth-child(${col})`);
+      	  	  let newtd = document.createElement("td");
+      	  	  newtd.classList.add("sparklineCell");
+      	  	  newtd.style.padding = "4";
+      	  	  newtd.style.color = "#747474";
+      	  	  newtd.innerText = "Loading...";
+      	  	  td.parentElement.insertBefore(newtd,td.nextSibling);
+      	    }
+      	    let th = document.querySelector(`#table_testData > tbody > tr:first-child > th:nth-child(${col})`);
+      	    let hidHead = document.createElement("th");
+      	      hidHead.classList.add("sparklineCell");
+      	      hidHead.style.display = "none";
+              th.parentElement.insertBefore(hidHead,th.nextSibling);
+              th.colSpan = "2";
+        	});
+        	getAllHistData();
+      	  }
+      	  else{
+            document.querySelectorAll(".sparklineCell").forEach(cell => {
+              cell.remove();
+            });
+            document.querySelectorAll("#table_testData > tbody > tr:first-child > th").forEach(th => {
+              th.colSpan = "1";
+            });
+          }
+      }
+
+
+      function zoomOut(){
+      	zoomLevel -= 0.05;
+      	document.querySelector("#div_dataTableCon").style.transform = `Scale(${zoomLevel})`;
+      	document.querySelector("#div_dataTableCon").style.transformOrigin = "0% 0% 0px";
+      	document.querySelector("#div_genRunTableCon").style.transform = `Scale(${zoomLevel})`;
+      	document.querySelector("#div_genRunTableCon").style.transformOrigin = "0% 0% 0px";
+      	document.querySelector("#div_graphArea").style.transform = `Scale(${zoomLevel})`;
+      	document.querySelector("#div_graphArea").style.transformOrigin = "0% 0% 0px";
+      	document.querySelector("#div_autoRefreshButtons").style.transform = `Scale(${zoomLevel})`;
+      	document.querySelector("#div_autoRefreshButtons").style.transformOrigin = "50% 0% 0px";
+      	//document.querySelector("#div_syslog").style.transform = `Scale(${zoomLevel + 0.085})`;
+      	document.querySelector("#div_syslog").style.transformOrigin = "-75% 0% 0px";
+      	document.querySelector("#div_dataTableCon").style.width = (Math.round(document.querySelector("#table_testData > tbody").getBoundingClientRect().width) + 18) + "px";
+      	document.querySelector("#div_dataTableCon").style.height = (Math.round(document.querySelector("#table_testData > tbody").getBoundingClientRect().height) + 18) + "px";
+      	document.querySelector("#div_summaryData").style.width = document.querySelector("#div_dataTableCon").style.width;
+      	document.querySelector("#div_summaryData").style.width = document.querySelector("#div_dataTableCon").style.width;
+      	if(document.querySelector("#in_enableSyslog").checked){
+      	  document.querySelector("#div_autoRefreshButtons").style.width = (Math.round(document.querySelector("#table_syslog > tbody").getBoundingClientRect().width) + 18) + "px";
+      	}
+        document.querySelector("#span_zoomLabel").innerText = `Zoom (${Math.round((zoomLevel * 100) * 100) / 100}%):`;
+      }
+
+      function zoomIn(){
+        zoomLevel += 0.05;
+        document.querySelector("#div_dataTableCon").style.transform = `Scale(${zoomLevel})`;
+      	document.querySelector("#div_dataTableCon").style.transformOrigin = "0% 0% 0px";
+      	document.querySelector("#div_genRunTableCon").style.transform = `Scale(${zoomLevel})`;
+      	document.querySelector("#div_genRunTableCon").style.transformOrigin = "0% 0% 0px";
+      	document.querySelector("#div_graphArea").style.transform = `Scale(${zoomLevel})`;
+      	document.querySelector("#div_graphArea").style.transformOrigin = "0% 0% 0px";
+      	document.querySelector("#div_autoRefreshButtons").style.transform = `Scale(${zoomLevel})`;
+      	document.querySelector("#div_autoRefreshButtons").style.transformOrigin = "50% 0% 0px";
+      	//document.querySelector("#div_syslog").style.transform = `Scale(${zoomLevel - 0.085})`;
+      	document.querySelector("#div_syslog").style.transformOrigin = "-75% 0% 0px";
+      	document.querySelector("#div_dataTableCon").style.width = (Math.round(document.querySelector("#table_testData > tbody").clientWidth) + 5) + "px";
+      	document.querySelector("#div_dataTableCon").style.height = (Math.round(document.querySelector("#table_testData > tbody").clientHeight) + 257) + "px";
+      	document.querySelector("#div_summaryData").style.width = document.querySelector("#div_dataTableCon").style.width;
+      	document.querySelector("#div_summaryData").style.width = document.querySelector("#div_dataTableCon").style.width;
+      	if(document.querySelector("#in_enableSyslog").checked){
+      	  document.querySelector("#div_autoRefreshButtons").style.width = (Math.round(document.querySelector("#table_syslog > tbody").clientWidth) + 5) + "px";
+      	}
+        document.querySelector("#span_zoomLabel").innerText = `Zoom (${Math.round((zoomLevel * 100) * 100) / 100}%):`;
+      }
+
+      function toggleSyslog(){
+        if(document.querySelector("#in_enableSyslog").checked){
+	  	  document.querySelector("#div_syslog").style.display = "block";
+	  	  getSyslogData();
+	  	}
+	  	else{
+	      document.querySelector("#div_syslog").style.display = "none";
+	  	}
+      }
+
+      function buildSyslogTable(){
+        if(syslogData.length === 0){document.querySelector("#table_syslog").innerHTML = "<tr><td>No active simulated alarms.</td></tr>"; return;}
+        let tableRows = syslogData.length + 1;
+        let tableCols = Object.keys(syslogData[0]).length;
+        let tableCont = "";
+        for(let i = 0; i < tableRows; i++){
+          tableCont += "<tr>";
+          for(let ii = 0; ii < tableCols; ii++){
+            if(i === 0){
+              tableCont += `<th>${Object.keys(syslogData[0])[ii]}</th>`;
+            }
+            else{
+              tableCont += "<td></td>";
+            }
+          }
+          tableCont += "</tr>";
+        }
+        document.querySelector("#table_syslog").innerHTML = tableCont;
+        tableBuilt = true;
+      }
+
+      function fillSyslogTable(){
+        for(let i = 0; i < syslogData.length; i++){
+          for(let ii = 0; ii < Object.keys(syslogData[0]).length; ii++){
+          	document.querySelector(`#table_syslog > tbody > tr:nth-child(${i+2}) > td:nth-child(${ii+1})`).innerText = syslogData[i][Object.keys(syslogData[i])[ii]];
+          }
+        }
+      }
+
+      function buildSiteSpecificDataTable(){
+        let tableRows = pollSiteData.length + 0;
+        let tableCols = 3;
+        let tableCont = `<tr><th colspan="3">Site ${selectedSpecificSite} Sensors</th></tr><tr><th>Sensor</th><th>Status</th><th>Last Poll</th></tr>`;
+        for(let i = 0; i < tableRows; i++){
+          tableCont += "<tr>";
+          for(let ii = 0; ii < tableCols; ii++){
+//             if(i > 1){
+              tableCont += "<td></td>";
+//             }
+          }
+          tableCont += "</tr>";
+        }
+        document.querySelector("#table_siteSpecificData").innerHTML = tableCont;
+      }
+
+      function fillSiteSpecificDataTable(){
+        for(let i = 0; i < pollSiteData.length; i++){
+          for(let ii = 0; ii < Object.keys(pollSiteData[0]).length; ii++){
+            document.querySelector(`#table_siteSpecificData > tbody > tr:nth-child(${i+3}) > td:nth-child(${ii+1})`).innerText = pollSiteData[i][Object.keys(pollSiteData[i])[ii]];
+          }
+        }
+      }
+
+      function getSyslogData(){
+        syslogGet = new XMLHttpRequest();
+        syslogGet.onreadystatechange = function(){
+          if(this.readyState == 4 && this.status == 200){
+            syslogData = JSON.parse(syslogGet.responseText);
+            buildSyslogTable();
+            fillSyslogTable();
+          }
+        };
+        syslogGet.open("GET", "/demo/sysGet", true);
+        syslogGet.send();
+      }
+
+      function pollSite(site){
+        pollSiteGet = new XMLHttpRequest();
+        pollSiteGet.onreadystatechange = function(){
+          if(this.readyState == 4 && this.status == 200){
+            pollSiteData = JSON.parse(pollSiteGet.responseText);
+            //console.log(pollSiteData);
+            document.querySelector("#div_siteSpecificDataTableCon").innerHTML = `<table id="table_siteSpecificData"></table>`;
+            buildSiteSpecificDataTable();
+            fillSiteSpecificDataTable();
+          }
+        };    
+        document.querySelector("#div_siteSpecificDataTableCon").innerHTML = "<br/><br/><br/><br/><span>Loading...</span>";
+        pollSiteGet.open("GET", "/demo/pollSite/" + site, true);
+        pollSiteGet.send();
+      }
+
+      function toggleSiteSpecificDataOverlay(){
+        (document.querySelector("#div_siteSpecificOverlay").style.display === "none") ? document.querySelector("#div_siteSpecificOverlay").style.display = "block" : document.querySelector("#div_siteSpecificOverlay").style.display = "none";
+      }
+
+      function getAllData(){
+        allGet = new XMLHttpRequest();
+        allGet.onreadystatechange = function(){
+          if(this.readyState == 4 && this.status == 200){
+            allData = JSON.parse(allGet.responseText);
+              if(!(Array.isArray(allData))){
+                allData = [allData];
+              }
+            allData = stripNP(allData);
+            if(!(tableBuilt)){
+              buildTable();
+            }
+            fillTable();
+            if(initialTableFill){
+              zoomLevel = 0.6;
+              //zoomIn();
+              initialTableFill = false;
+            }
+            if(document.querySelector("#in_enableGraph").checked && graphBuilt){
+              //getHistData();
+            }
+            if(document.querySelector("#in_enableGraph").checked){
+              getAllHistData();
+            }
+            if(document.querySelector("#in_enableSyslog").checked){
+              getSyslogData();
+            }
+            if(autoStartingRefresh){
+              autoStartRefresh();
+            }
+          }
+        };
+        allGet.open("GET", "/demo/all", true);
+        allGet.send();
+      }
+      getAllData();
+      //let updating = setInterval(getAllData,15000);
+
+      function tableToggle(){
+      	if(currentTable === "summary"){
+      	  document.querySelector("#btn_tableToggle").innerText = "Generator Runs (Alpha \uD83D\uDE10)";
+      	  document.querySelector("#div_summaryData").style.display = "none";
+      	  document.querySelector("#div_genRunData").style.display = "inline-block";
+      	  currentTable = "genRun";
+      	  getGenRunData();
+      	}
+      	else if(currentTable === "genRun"){
+      	  document.querySelector("#btn_tableToggle").innerText = "Summary";
+      	  document.querySelector("#div_genRunData").style.display = "none"
+      	  document.querySelector("#div_summaryData").style.display = "inline-block";;
+      	  currentTable = "summary";
+      	  getAllData();
+      	}
+      	if(autoRefreshing){
+      	  stopRefresh();
+      	  startRefresh();
+      	}
+      }
+
+      function buildGenRunTable(){
+        let tableRows = genRunData.length + 1;
+        let tableCols = Object.keys(genRunData[0]).length;
+        let tableCont = "";
+        tableCont += "<tr><th>Site</th><th colspan=2>Generator Last ON</th><th colspan=2>Generator Last OFF</th><th>Propane Lost</th></tr>";
+        for(let i = 0; i < tableRows; i++){
+          //tableCont += "<tr>";
+          for(let ii = 0; ii < tableCols; ii++){
+            if(i === 0){
+              //tableCont += `<th>${Object.keys(genRunData[0])[ii]}</th>`;
+            }
+            else{
+              tableCont += "<td></td>";
+            }
+          }
+          tableCont += "</tr>";
+        }
+        document.querySelector("#table_genRun").innerHTML = tableCont;
+      }
+
+      function fillGenRunTable(){
+        for(let i = 0; i < genRunData.length; i++){
+          for(let ii = 0; ii < Object.keys(genRunData[0]).length; ii++){
+          	if(genRunData[i][Object.keys(genRunData[i])[ii]] !== "_NP"){
+          	  document.querySelector(`#table_genRun > tbody > tr:nth-child(${i+2}) > td:nth-child(${ii+1})`).innerText = genRunData[i][Object.keys(genRunData[i])[ii]];
+          	}
+            else{
+              document.querySelector(`#table_genRun > tbody > tr:nth-child(${i+2}) > td:nth-child(${ii+1})`).innerText = "";
+            }
+            if(i % 2 === 0){
+            	document.querySelector(`#table_genRun > tbody > tr:nth-child(${i+2}) > td:nth-child(${ii+1})`).style.backgroundColor = "black";
+            }
+            else{
+            	document.querySelector(`#table_genRun > tbody > tr:nth-child(${i+2}) > td:nth-child(${ii+1})`).style.backgroundColor = "#333333";
+            }
+          }
+        }
+      }
+
+      function getGenRunData(){
+        let genRunGet = new XMLHttpRequest();
+        genRunGet.onreadystatechange = function(){
+          if(this.readyState == 4 && this.status == 200){          
+            if(genRunGet.responseText !== "ND"){
+              genRunData = JSON.parse(genRunGet.responseText.split("<~~~~~>")[0]);
+              if(!(Array.isArray(genRunData))){
+                genRunData = [genRunData];
+              }
+              buildGenRunTable();
+              fillGenRunTable();
+              document.querySelector("#span_genRunTableDate").innerText = `\r\n\r\nLast Updated: ${genRunGet.responseText.split("<~~~~~>")[1]}`;
+            }
+          }
+        };
+        genRunGet.open("GET", "/demo/genRunsGet", true);
+        genRunGet.send();
+        document.querySelector("#span_genRunTableDate").innerText = "Loading...";
+      }
+
+      function autoStartRefresh(){
+        document.querySelector("#in_refreshInterval").value = 30;
+        startRefresh();
+      }
+
+      document.querySelector("#div_main").style.opacity = 1;
+ 
+
+
+    </script>
+  </body>
+</html>

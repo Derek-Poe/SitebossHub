@@ -1,0 +1,3 @@
+include LICENSE
+recursive-include docs *.png
+recursive-include tools *.py
