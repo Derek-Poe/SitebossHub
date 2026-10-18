@@ -35,6 +35,8 @@ The original PowerShell implementation separates several concerns:
 
 The interesting boundary is the contract between collectors and the dashboard: a replacement backend can keep the operator workflow intact. The demo exercises that boundary with synthetic snapshots, bounded histories and an inspectable record of the SNMP calls that a real collector would make.
 
+The [collector case study](docs/collector-case-study.md) traces the original polling cycle, value-change handling, operator workflow, and the evidence behind those descriptions.
+
 ```mermaid
 flowchart LR
   UI[Original HTML / Canvas dashboard] --> API[FastAPI contract adapter]
